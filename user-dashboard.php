@@ -3,52 +3,7 @@
 Template Name: User Dashboard
 */
 
-// Check if user is logged in
-if (!is_user_logged_in()) {
-    wp_redirect(wp_login_url());
-    exit;
-}
-
-$current_user = wp_get_current_user();
-$user_id = $current_user->ID;
-
-// Handle form submissions
-if ($_POST) {
-    if (isset($_POST['update_profile'])) {
-        // Update user profile
-        $user_data = array(
-            'ID' => $user_id,
-            'display_name' => sanitize_text_field($_POST['display_name']),
-            'user_email' => sanitize_email($_POST['user_email']),
-            'first_name' => sanitize_text_field($_POST['first_name']),
-            'last_name' => sanitize_text_field($_POST['last_name']),
-        );
-        
-        wp_update_user($user_data);
-        
-        // Update custom fields
-        update_user_meta($user_id, 'phone', sanitize_text_field($_POST['phone']));
-        update_user_meta($user_id, 'location', sanitize_text_field($_POST['location']));
-        
-        $success_message = "Profile updated successfully!";
-    }
-}
-
-// Handle profile photo upload
-if (isset($_FILES['profile_photo'])) {
-    $upload = wp_handle_upload($_FILES['profile_photo'], array('test_form' => false));
-    if ($upload && !isset($upload['error'])) {
-        update_user_meta($user_id, 'profile_photo', $upload['url']);
-        $success_message = "Profile photo updated successfully!";
-    }
-}
-
-// Get user data
-$profile_photo = get_user_meta($user_id, 'profile_photo', true);
-$phone = get_user_meta($user_id, 'phone', true);
-$location = get_user_meta($user_id, 'location', true);
-
-get_header();?>
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -57,27 +12,52 @@ get_header();?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Your Profile</title>
+
     <style>
+    body {
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 100vh;
+        padding: 40px;
+
+    }
+
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
     }
 
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        background-color: #f5f5f5;
-        padding: 20px;
+    .form-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+
     }
 
+    .form-row .form-group {
+        flex: 1 1 48%;
+
+    }
+
+
+
     .container {
-        min-width: 400px;
+        max-width: 800px;
+        width: 100%;
         margin: 0 auto;
-        background-color: white;
         padding: 30px;
         border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid #333;
+        box-shadow: 0 8px 30px rgba(231, 76, 60, 0.4);
+        color: #fff;
     }
+
+
 
     .profile-header {
         display: flex;
@@ -130,7 +110,7 @@ get_header();?>
     }
 
     .upload-icon {
-        color: white;
+        color: red;
         font-size: 24px;
         font-weight: bold;
     }
@@ -153,7 +133,7 @@ get_header();?>
     }
 
     .upload-btn:hover {
-        background-color: #3367d6;
+        background-color: #e74c3c;
     }
 
     .profile-info h3 {
@@ -223,15 +203,15 @@ get_header();?>
     }
 
     .save-btn:hover {
-        background-color: #3367d6;
+        background-color: #e74c3c;
     }
 
     .save-btn:active {
-        background-color: #2851a3;
+        background-color: #e74c3c;
     }
 
     .remove-btn {
-        background-color: #dc3545;
+        background-color: rgb(146, 7, 21);
         color: white;
         padding: 8px 16px;
         border: none;
@@ -281,21 +261,94 @@ get_header();?>
         </div>
 
         <div style="margin-top: 30px;">
-            <div class="form-group">
-                <label for="name">Name</label>
-                <p>Rakib Islam Rifat</p>
+
+
+            <div class="form-row">
+                <div class="form-group" data-key="first_name">
+                    <label>First Name</label>
+                    <p>Rakib</p>
+                </div>
+
+                <div class="form-group" data-key="last_name">
+                    <label>Last Name</label>
+                    <p>Islam</p>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="email">Email account</label>
-                <p>rakibislamrifat9@gmail.com</p>
+            <div class="form-row">
+
+                <div class="form-group" data-key="dob">
+                    <label>Date of Birth</label>
+                    <p>1999-12-31</p>
+                </div>
+
+                <div class="form-group" data-key="username">
+                    <label>Username</label>
+                    <p>Chaitu2025</p>
+                </div>
+
+
+
+
             </div>
 
-            <div class="form-group">
-                <label for="mobile">Mobile number</label>
-                <p>+1 234 567 890</p>
+
+            <div class="form-row">
+                <div class="form-group" data-key="email">
+                    <label>Email Address</label>
+                    <p>your.email@example.com</p>
+                </div>
+
+                <div class="form-group" data-key="phone">
+                    <label>Phone Number</label>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+
+            </div>
+
+
+
+            <div class="form-row">
+                <div class="form-group" data-key="address">
+                    <label>Address</label>
+                    <p>123 Main Street</p>
+                </div>
+
+                <div class="form-group" data-key="region">
+                    <label>Region</label>
+                    <p>United States</p>
+                </div>
+            </div>
+
+
+            <div class="form-row">
+                <div class="form-group" data-key="street_address">
+                    <label>Street Address</label>
+                    <p>Suite 10</p>
+                </div>
+
+                <div class="form-group" data-key="zip">
+                    <label>ZIP Code</label>
+                    <p>12345</p>
+                </div>
+            </div>
+
+
+
+            <div class="form-row">
+                <div class="form-group" data-key="password">
+                    <label>Password</label>
+                    <p>********</p>
+                </div>
+
+                <div class="form-group" data-key="confirm_password">
+                    <label>Confirm Password</label>
+                    <p>********</p>
+                </div>
             </div>
         </div>
+
+
 
         <button type="submit" class="save-btn">Edit Your Profile</button>
     </div>
@@ -377,6 +430,54 @@ get_header();?>
         }
     });
     </script>
+
+    <script>
+    let isEditing = false;
+
+    document.querySelector('.save-btn').addEventListener('click', function() {
+        const groups = document.querySelectorAll('.form-group');
+
+        if (!isEditing) {
+            // Convert <p> to <input> fields
+            groups.forEach(group => {
+                const key = group.getAttribute('data-key');
+                const value = group.querySelector('p')?.innerText || '';
+                let inputType = 'text';
+
+                if (key === 'dob') inputType = 'date';
+                if (key === 'email') inputType = 'email';
+                if (key === 'phone') inputType = 'tel';
+                if (key === 'password' || key === 'confirm_password') inputType = 'password';
+
+                group.innerHTML = `
+                <label>${group.querySelector('label').innerText}</label>
+                <input type="${inputType}" name="${key}" value="${value}">
+            `;
+            });
+
+            this.textContent = 'Save Changes';
+            isEditing = true;
+        } else {
+            // Convert <input> back to <p>
+            groups.forEach(group => {
+                const input = group.querySelector('input');
+                const label = group.querySelector('label').innerText;
+                const value = input.value;
+
+                group.innerHTML = `
+                <label>${label}</label>
+                <p>${value}</p>
+            `;
+            });
+
+            this.textContent = 'Edit Your Profile';
+            isEditing = false;
+        }
+    });
+    </script>
+
+
+
 </body>
 
 </html>
